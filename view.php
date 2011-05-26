@@ -169,6 +169,8 @@ defined('C5_EXECUTE') or die("Access Denied.");
 				file_put_contents($cssFileMerge, $cssCompress, FILE_APPEND);
 			} 
 			print'<link rel="stylesheet" type="text/css" href="'.ASSETS_URL_WEB.'/css/merge.css" />';
+			global $cp;
+			if(!$cp->canWrite()){
 			/* this is a bit weird
 			/ The mod was acting up in edit mode, so we check if its in edit mode or if the user has permissions to edit. 
 			/ If they can, then we don't compress the files (just screws things up)
@@ -177,8 +179,6 @@ defined('C5_EXECUTE') or die("Access Denied.");
 			if(file_exists(DIRNAME_JAVASCRIPT."/merge.js")){
 				unlink(DIRNAME_JAVASCRIPT."/merge.js");
 			}
-			global $cp;
-			if(!$cp->canWrite()){
 			print'<script type="text/javascript" src="'.ASSETS_URL_WEB.'/js/merge.js"></script>';
 				foreach($jsCombine as $js){
 					/*
