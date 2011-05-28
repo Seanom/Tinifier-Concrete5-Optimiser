@@ -1,4 +1,4 @@
-<?php
+<?php 
 
 defined('C5_EXECUTE') or die("Access Denied.");
 
@@ -119,11 +119,13 @@ defined('C5_EXECUTE') or die("Access Denied.");
 			}
 			return $items;
 		}
+		
 		/** 
 		 * Function responsible for outputting header items
 		 * @access private
 		 */
 		public function outputHeaderItems() {
+			
 			$items = $this->getHeaderItems();
 			
 			// Loop through all items
@@ -132,102 +134,53 @@ defined('C5_EXECUTE') or die("Access Denied.");
 			
 			$outputPost = array();
 			$output = array();
-			$cssCombine = array();
-			$jsCombine = array();
-			$jsNoCombine = array();
-			$misc = array();
+			
+			/*
+			if (ENABLE_ASSET_COMPRESSION == true) {
 				foreach($items as $item) {
-					$jsExt   = '.js';
-					$jsFile = strpos($item, $jsExt);
-					$cssExt   = '.css';
-					$cssFile = strpos($item, $cssExt);
-					if($jsFile !== false){
-						global $cp;
-						if(!$cp->canWrite()){
-							$jsItem= preg_replace('/<script type="text\/javascript" src="(.*)"><\/script>/', '$1', $item);// get whats in src attr
-							array_push($jsCombine, $jsItem);
-						}else{
-							array_push($jsNoCombine, $item);
-						}
-					}else if ($cssFile !== false) {
-         				$cssItem= preg_replace('/<link rel="stylesheet" type="text\/css" href="(.*)" \/>/', '$1', $item);// get whats in href attr       
-         				array_push($cssCombine, $cssItem);
-					}else{
-						array_push($misc, $item);
+					if (is_a($item, 'JavaScriptOutputObject')) {
+						$output['JAVASCRIPT'][dirname($item->file)][] = $item;
+					} else if (is_a($item, 'CSSOutputObject')) {
+						$output['CSS'][dirname($item->file)][] = $item;
+					} else {
+						$outputPost[] = $item;
 					}
 				}
-			if(file_exists(DIRNAME_CSS."/merge.css")){
-				unlink(DIRNAME_CSS."/merge.css");
-			}
-			foreach($cssCombine as $css){
-				$cssFile=BASE_URL.$css;
-			 	$cssFileContents=file_get_contents($cssFile);
-				$cssCompress=$this->cssCompress($cssFileContents);
-				$coreCssFile   = '/concrete/css';
-				$cssCoreFile = strpos($cssFile, $coreCssFile);
-				$cssFileMerge = DIRNAME_CSS."/merge.css";
-				file_put_contents($cssFileMerge, $cssCompress, FILE_APPEND);
-			} 
-			print'<link rel="stylesheet" type="text/css" href="'.ASSETS_URL_WEB.'/css/merge.css" />';
-			global $cp;
-			if(!$cp->canWrite()){
-			/* this is a bit weird
-			/ The mod was acting up in edit mode, so we check if its in edit mode or if the user has permissions to edit. 
-			/ If they can, then we don't compress the files (just screws things up)
-			/If they can't edit the page then we compress the files
-			*/ 
-			if(file_exists(DIRNAME_JAVASCRIPT."/merge.js")){
-				unlink(DIRNAME_JAVASCRIPT."/merge.js");
-			}
-			print'<script type="text/javascript" src="'.ASSETS_URL_WEB.'/js/merge.js"></script>';
-				foreach($jsCombine as $js){
-					/*
-					/Compressing the js takes way too long so we just insert the uncompressed stuff.
-					/TODO: Speed it up- if its a not new version then don't compress it again
-					/Do this with css too
-					*/
-					//$jsCompress=JSMin::minify( $jsFileContents );	
-					//Loader::library( '3rdparty/jsmin' );
-					$jsFile=BASE_URL.$js;
-			 		$jsFileContents=file_get_contents($jsFile);
-					$jsFileMerge = DIRNAME_JAVASCRIPT."/merge.js";
-					file_put_contents($jsFileMerge, $jsFileContents, FILE_APPEND);
+	
+				$html = Loader::helper("html");
+				foreach($output as $type => $item) {
+					switch($type) {
+						case 'JAVASCRIPT':
+							foreach($item as $base => $ind) {
+								$src = REL_DIR_FILES_TOOLS_REQUIRED . '/minify?b=' . trim($base, '/') . '&f=';
+								foreach($ind as $i) {
+									$src .= basename($i->file) . ',';
+								}
+								print $html->javascript(trim($src, ',')) . "\n";
+							}
+							break;
+						case 'CSS':
+							foreach($item as $base => $ind) {
+								$src = REL_DIR_FILES_TOOLS_REQUIRED . '/minify?b=' . trim($base, '/') . '&f=';
+								foreach($ind as $i) {
+									$src .= basename($i->file) . ',';
+								}
+								print $html->css(trim($src, ',')) . "\n";
+							}
+							break;					
+					}
 				}
-			}else{
-				foreach($jsNoCombine as $js){
-					// edit mode
-					print $js;
-				}
+			} else {
+				$outputPost = $items;
 			}
-			foreach($misc as $msc){
-			 	print $msc; 
-			 	//inline shit added to header (without an extension we recognize)
+			*/
+			
+			foreach($items as $hi) {
+				print $hi; // caled on two seperate lines because of pre php 5.2 __toString issues
+				print "\n";
 			}
-		}
-		
-
-		function cssCompress($string) {
-		/* remove comments */
-		    $string = preg_replace('!/\*[^*]*\*+([^/][^*]*\*+)*/!', '', $string);
-		/* remove tabs, spaces, new lines, etc. */        
-		    $string = str_replace(array("\r\n", "\r", "\n", "\t", '  ', '    ', '    '), '', $string);
-		/* remove unnecessary spaces */        
-		    $string = str_replace('{ ', '{', $string);
-		    $string = str_replace(' }', '}', $string);
-		    $string = str_replace('; ', ';', $string);
-		    $string = str_replace(', ', ',', $string);
-		    $string = str_replace(' {', '{', $string);
-		    $string = str_replace('} ', '}', $string);
-		    $string = str_replace(': ', ':', $string);
-		    $string = str_replace(' ,', ',', $string);
-		    $string = str_replace(' ;', ';', $string); 
-			if ($cssCoreFile !== false) {// check if its a core css file. If it is then we replace the link to images 
-				$string = str_replace('../images/', BASE_URL.DIR_REL.'/concrete/images/', $string);
-			} 
-		return $string;
-		}
-		public function field($fieldName) {
-			return $this->controller->field($fieldName);
+			
+			
 		}
 		
 		/** 
@@ -624,6 +577,7 @@ defined('C5_EXECUTE') or die("Access Denied.");
 		 * @return void
 		*/	
 		public function render($view, $args = null) { 
+			
 			try {			
 				if (is_array($args)) {
 					extract($args);
@@ -775,7 +729,7 @@ defined('C5_EXECUTE') or die("Access Denied.");
 					
 					foreach($_pageBlocks as $b1) {
 						$btc = $b1->getInstance();
-						// now we inject any custom template css and JavaScript into the header
+						// now we inject any custom template CSS and JavaScript into the header
 						if('Controller' != get_class($btc)){
 							$btc->outputAutoHeaderItems();
 						}
@@ -816,24 +770,9 @@ defined('C5_EXECUTE') or die("Access Denied.");
 					include($this->theme);
 					$pageContent = ob_get_contents();
 					ob_end_clean();
-					
 					// Tinifier optimiser
-					//$tiny = Loader::helper('tinifier');
-					$compressPageContent = preg_replace('/(?:(?<=\>)|(?<=\/\)))(\s+)(?=\<\/?)/','',$pageContent);
-					global $cp;
-						if(!$cp->canWrite()){
-					if ( preg_match_all( '#<\s*script\s*(type="text/javascript"\s*)?>(.+)<\s*/script\s*>#smUi',$compressPageContent,$inlineJs )>0 ) {
-				foreach ( $inlineJs as $Inlineitem ) {
-					$jsFileMerge = DIRNAME_JAVASCRIPT."/merge.js";
-					$Inlineitem1=str_replace('<script type="text/javascript">', "", $Inlineitem);
-					$Inlineitem2=str_replace('</script>', "", $Inlineitem1);
-					file_put_contents($jsFileMerge, $Inlineitem2, FILE_APPEND);
-				}	
-			}		
-					echo preg_replace('#<\s*script\s*(type="text/javascript"\s*)?>(.+)<\s*/script\s*>#smUi', "",$compressPageContent);
-				}else{
-					print $compressPageContent;
-				}	
+					$tiny = Loader::helper('tiny');
+					print $tiny->tinify($pageContent);
 					if ($view instanceof Page) {
 						if ($view->supportsPageCache($_pageBlocks, $this->controller)) {
 							$view->addToPageCache($pageContent);
