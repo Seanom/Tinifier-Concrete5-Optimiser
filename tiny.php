@@ -5,11 +5,12 @@
 	---------
 
 	@file 		tiny.php
-	@date 		2011-05-27 22:20:36 -0400 (Fri, 27 May 2011)
+	@date 		2011-05-27 22:20:36 -0400 (tue, 31 May 2011)
 	@author 	Jack Lightbody <jack.lightbody@gmail.com>
 	Copyright (c) 2011 Jack Lightbody <12345j.co.cc>
 	@license 	Mit Open Source
 	@github https://github.com/12345j/Tinifier-Concrete5-Optimiser
+        @version 1.3
 */
 defined( 'C5_EXECUTE' ) or die( "Access Denied." );
 
