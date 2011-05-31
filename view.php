@@ -770,9 +770,15 @@ defined('C5_EXECUTE') or die("Access Denied.");
 					include($this->theme);
 					$pageContent = ob_get_contents();
 					ob_end_clean();
-					// Tinifier optimiser
-					$tiny = Loader::helper('tiny');
-					print $tiny->tinify($pageContent);
+					global $cp;
+					global $c;
+					if(!$cp->canWrite() && !$c->isSystemPage()){
+						// Tinifier optimiser
+						$tiny = Loader::helper('tiny');
+						print $tiny->tinify($pageContent);
+					}else{
+						print $pageContent;
+					}
 					if ($view instanceof Page) {
 						if ($view->supportsPageCache($_pageBlocks, $this->controller)) {
 							$view->addToPageCache($pageContent);
