@@ -10,7 +10,7 @@
 	Copyright (c) 2011 Jack Lightbody <12345j.co.cc>
 	@license 	Mit Open Source
 	@github https://github.com/12345j/Tinifier-Concrete5-Optimiser
-        @version 1.3
+        @version 1.3.1
 */
 defined( 'C5_EXECUTE' ) or die( "Access Denied." );
 
@@ -111,8 +111,5 @@ class TinyHelper {
 		    $string = str_replace(': ', ':', $string);
 		    $string = str_replace(' ,', ',', $string);
 		    $string = str_replace(' ;', ';', $string); 
-			if ($cssCoreFile !== false) {// check if its a core css file. If it is then we replace the link to the core images folder 
-				$string = str_replace('../images/', BASE_URL.DIR_REL.'/concrete/images/', $string);
-			} 
 		return $string;
 		}
