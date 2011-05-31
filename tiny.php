@@ -28,8 +28,6 @@ class TinyHelper {
 			$unknownCss=array();
 			$unknownJs=array();
 			// Get all the javascript links to files and put their content in the merge js file			
-
-						// get all the css links
 			if ( preg_match_all( '#<\s*script\s*(type="text/javascript"\s*)?src=.+<\s*/script\s*>#smUi',$content,$jsLinks )) {
 				foreach ( $jsLinks[0] as $jsLink ) {
 					if(preg_match('/<script type="text\/javascript" src="(.*)"><\/script>/', $jsLink )){
@@ -38,6 +36,7 @@ class TinyHelper {
          			}else{
          				array_push($unknownJs, $jsLink);
          			}
+         			$content=str_replace($jsLink, '', $content);
 				}	
 				foreach ($jsCombine as $js){
 						$jsFile=BASE_URL.$js;
@@ -51,24 +50,25 @@ class TinyHelper {
 						//$jsCompress=JSMin::minify( $jsFileContents );	
 						file_put_contents($jsFileMerge, $jsFileContents, FILE_APPEND);
 				}	
-				}
-			// get all the inline javascript and add it to the merge js file
-			if ( preg_match( '#<\s*script\s*(type="text/javascript"\s*)?>(.+)<\s*/script\s*>#smUi',$content,$inlineJs )>0 ) {
-				foreach ( $inlineJs as $Inlineitem ) {
-					$Inlineitem=preg_replace('#<\s*script\s*(type="text/javascript"\s*)?>#smUi', "", $Inlineitem);
-					$Inlineitem=preg_replace('#<\s*/script\s*>#smUi', "", $Inlineitem);
-					file_put_contents($jsFileMerge, $Inlineitem, FILE_APPEND);
+			}
+			$content =  str_ireplace( '</body>','<script type="text/javascript" src="'.ASSETS_URL_WEB.'/js/merge.js"></body>', $content );	// add the script link to the footer
+			// get all the inline javascript and add it to the footer (we need this below the merge)
+			if(preg_match_all( '#<\s*script\s*(type="text/javascript"\s*)?>(.+)<\s*/script\s*>#smUi',$content,$inlineJavascript )){
+				foreach ($inlineJavascript[0] as $inlineItem ) {
+					$content=str_replace($inlineItem, '', $content);
+					$content=str_replace('</body>', $inlineItem.'</body>', $content);
 				}	
 			}
-			// get all the css links
+			// get all the css links and add to merge
 			if ( preg_match_all( '#<\s*link\s*rel="?stylesheet"?.+>#smUi',$content,$cssLinks )) {
-				foreach ( $cssLinks[0] as $cssLink ) {
+				foreach ($cssLinks[0] as $cssLink ) {
 					if(preg_match('/<link rel="stylesheet" type="text\/css" href="(.*)" \/>/', $cssLink )){
          				$cssItem= preg_replace('/<link rel="stylesheet" type="text\/css" href="(.*)" \/>/', '$1', $cssLink);// get whats in href attr  
          				array_push($cssCombine, $cssItem);
          			}else{
          				array_push($unknownCss, $cssLink);
          			}
+         			$content=str_replace($cssLink, '', $content);
 				}	
 					foreach($cssCombine as $css){				
 						$cssFile=BASE_URL.$css;
@@ -85,17 +85,13 @@ class TinyHelper {
 						$Inlinecssitem=preg_replace('#<\s*style.*>#smUi', "", $Inlinecssitem);
 						$Inlinecssitem=preg_replace('#<\s*/style\s*\/?>#smUi', "", $Inlinecssitem);
 						file_put_contents($cssFileMerge, $Inlinecssitem, FILE_APPEND);
+						$content=str_replace($Inlinecssitem, '', $content);
 					}	
 				}
-				$content =  preg_replace('#<\s*script\s*(type="text/javascript"\s*)?>(.+)<\s*/script\s*>#smUi',"",$content);	
-				$content=preg_replace(  '#<\s*link\s*rel="?stylesheet"?.+>#smUi',"",$content);
-				$content=preg_replace( '#<\s*style.*>.+<\s*/style\s*\/?>#smUi',"",$content );//remove the style tags from the html
-				$content=preg_replace('#<\s*script\s*(type="text/javascript"\s*)?>(.+)<\s*/script\s*>#smUi', "",$content);//same for javascript
 				foreach($unknownCss as $cssU){
-				$content=str_ireplace( '</head>',$cssU.'</head>', $content );	// add the stylesheet link to the head					
+					$content=str_ireplace( '</head>',$cssU.'</head>', $content );	// add the stylesheet link to the head					
 				}
-				$content =  str_ireplace( '</head>','<link rel="stylesheet" type="text/css" href="'.ASSETS_URL_WEB.'/css/merge.css" /><!--Compressed by Tinifier v1.2--></head>', $content );	// add the stylesheet link to the head
-				$content =  str_ireplace( '</body>','<script type="text/javascript" src="'.ASSETS_URL_WEB.'/js/merge.js"></script></body>', $content );	// add the script link to the footer
+				$content =  str_ireplace( '</head>','<link rel="stylesheet" type="text/css" href="'.ASSETS_URL_WEB.'/css/merge.css" /><!--Compressed by Tinifier v1.3--></head>', $content );	// add the stylesheet link to the head
 				$content = preg_replace('/(?:(?<=\>)|(?<=\/\)))(\s+)(?=\<\/?)/','',$content);//remove html whitespace
 				return $content;	
 		}}
