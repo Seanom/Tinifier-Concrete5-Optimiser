@@ -28,7 +28,7 @@ class TinyHelper {
 			$cssCombine=array();
 			$unknownCss=array();
 			$unknownJs=array();
-			// Get all the javascript links to files and put their content in the merge js file			
+						// Get all the javascript links to files and put their content in the merge js file			
 			if ( preg_match_all( '#<\s*script\s*(type="text/javascript"\s*)?src=.+<\s*/script\s*>#smUi',$content,$jsLinks )) {
 				foreach ( $jsLinks[0] as $jsLink ) {
 					if(preg_match('/<script type="text\/javascript" src="(.*)"><\/script>/', $jsLink )){
@@ -40,16 +40,18 @@ class TinyHelper {
          			$content=str_replace($jsLink, '', $content);
 				}	
 				foreach ($jsCombine as $js){
-						$jsFile=BASE_URL.$js;
-			 			$jsFileContents=file_get_contents($jsFile);
-						/*
-						/Compressing the js takes way too long so we just insert the uncompressed stuff.
-						/TODO: Speed it up- if its a not new version then don't compress it again
-						/Do this with css too
-						*/
-						//Loader::library( '3rdparty/jsmin' );
-						//$jsCompress=JSMin::minify( $jsFileContents );	
-						file_put_contents($jsFileMerge, $jsFileContents, FILE_APPEND);
+				$external = 'http://';
+				$externalFile = strpos($js, $external);
+				if($externalFile === false){
+					$jsFile=BASE_URL.$js;
+				}else{
+					$jsFile=$js;
+				}
+			 		$jsFileContents=file_get_contents($jsFile);
+					/*Compressing the js takes way too long so we just insert the uncompressed stuff. TODO: Speed it up- if its a not new version then don't compress it again. Do this with css too */
+					//Loader::library( '3rdparty/jsmin' );
+					//$jsCompress=JSMin::minify( $jsFileContents );	
+					file_put_contents($jsFileMerge, $jsFileContents, FILE_APPEND);
 				}	
 			}
 			$content =  str_ireplace( '</body>','<script type="text/javascript" src="'.ASSETS_URL_WEB.'/js/merge.js"></body>', $content );	// add the script link to the footer
