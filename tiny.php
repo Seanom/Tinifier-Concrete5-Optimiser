@@ -5,12 +5,12 @@
 	---------
 
 	@file 		tiny.php
-	@date 		2011-05-27 22:20:36 -0400 (tue, 31 May 2011)
+	@date 		2011-05-27 22:20:36 -0400 (Wed, 1 June 2011)
 	@author 	Jack Lightbody <jack.lightbody@gmail.com>
-	Copyright (c) 2011 Jack Lightbody <12345j.co.cc>
+	Copyright   (c) 2011 Jack Lightbody <12345j.co.cc>
 	@license 	Mit Open Source
-	@github https://github.com/12345j/Tinifier-Concrete5-Optimiser
-        @version 1.3.1
+	@github     https://github.com/12345j/Tinifier-Concrete5-Optimiser
+	@version    1.3.5
 */
 defined( 'C5_EXECUTE' ) or die( "Access Denied." );
 
@@ -83,16 +83,17 @@ class TinyHelper {
 				// get all the inline css and add to merge
 				if ( preg_match( '#<\s*style.*>.+<\s*/style\s*\/?>#smUi',$content,$inlineCss )>0 ) {
 					foreach ( $inlineCss as $Inlinecssitem ) {
-						$Inlinecssitem=preg_replace('#<\s*style.*>#smUi', "", $Inlinecssitem);
-						$Inlinecssitem=preg_replace('#<\s*/style\s*\/?>#smUi', "", $Inlinecssitem);
-						file_put_contents($cssFileMerge, $Inlinecssitem, FILE_APPEND);
+						$Inlinecssitem1=preg_replace('#<\s*style.*>#smUi', "", $Inlinecssitem);
+						$Inlinecssitem1=preg_replace('#<\s*/style\s*\/?>#smUi', "", $Inlinecssitem1);
+						$cssCompress=cssCompress($Inlinecssitem1);
+						file_put_contents($cssFileMerge, $cssCompress, FILE_APPEND);
 						$content=str_replace($Inlinecssitem, '', $content);
 					}	
 				}
 				foreach($unknownCss as $cssU){
 					$content=str_ireplace( '</head>',$cssU.'</head>', $content );	// add the stylesheet link to the head					
 				}
-				$content =  str_ireplace( '</head>','<link rel="stylesheet" type="text/css" href="'.ASSETS_URL_WEB.'/css/merge.css" /><!--Compressed by Tinifier v1.3--></head>', $content );	// add the stylesheet link to the head
+				$content =  str_ireplace( '</head>','<link rel="stylesheet" type="text/css" href="'.ASSETS_URL_WEB.'/css/merge.css" /><!--Compressed by Tinifier v1.3.5--></head>', $content );	// add the stylesheet link to the head
 				$content = preg_replace('/(?:(?<=\>)|(?<=\/\)))(\s+)(?=\<\/?)/','',$content);//remove html whitespace
 				return $content;	
 		}}
@@ -111,5 +112,8 @@ class TinyHelper {
 		    $string = str_replace(': ', ':', $string);
 		    $string = str_replace(' ,', ',', $string);
 		    $string = str_replace(' ;', ';', $string); 
+			if ($cssCoreFile !== false) {// check if its a core css file. If it is then we replace the link to the core images folder 
+				$string = str_replace('../images/', BASE_URL.DIR_REL.'/concrete/images/', $string);
+			} 
 		return $string;
 		}
