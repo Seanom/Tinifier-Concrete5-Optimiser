@@ -75,8 +75,6 @@ class TinyHelper {
 						$cssFile=BASE_URL.$css;
 			 			$cssFileContents=file_get_contents($cssFile);
 			 			$cssCompress=cssCompress($cssFileContents);
-						$coreCssFile   = '/concrete/css';
-						$cssCoreFile = strpos($cssFile, $coreCssFile);
 						file_put_contents($cssFileMerge, $cssCompress, FILE_APPEND);	
 					}
 				}
@@ -112,8 +110,5 @@ class TinyHelper {
 		    $string = str_replace(': ', ':', $string);
 		    $string = str_replace(' ,', ',', $string);
 		    $string = str_replace(' ;', ';', $string); 
-			if ($cssCoreFile !== false) {// check if its a core css file. If it is then we replace the link to the core images folder 
-				$string = str_replace('../images/', BASE_URL.DIR_REL.'/concrete/images/', $string);
-			} 
 		return $string;
 		}
